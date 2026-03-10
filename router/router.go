@@ -13,6 +13,7 @@ func RegisterRoutes(
 	avatarHandler *handler.AvatarHandler,
 	todohandler *handler.TodoHandler,
 	studydatahandler *handler.StudyDataHandler,
+	musichandler *handler.MusicHandler,
 ) {
 	publicGroup := r.Group("/api")
 	{
@@ -48,5 +49,9 @@ func RegisterRoutes(
 		authGroup.GET("/studydata/weekly", studydatahandler.GetWeekStudyData)
 		authGroup.GET("/studydata/monthly", studydatahandler.GetMonthlyStudyData)
 		authGroup.GET("/studydata/yearly", studydatahandler.GetYearStudyData)
+
+		// 音乐相关
+		authGroup.GET("/music", musichandler.GetAllMusic)
+		authGroup.POST("/music", musichandler.UploadMusic)
 	}
 }

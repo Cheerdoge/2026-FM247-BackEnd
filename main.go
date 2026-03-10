@@ -45,11 +45,13 @@ func main() {
 	tokenRepo := repository.NewTokenBlacklistRepository(db)
 	todoRepo := repository.NewTodoRepository(db)
 	studyDataRepo := repository.NewStudyDataRepository(db, redisClient)
+	musicRepo := repository.NewMusicRepository(db)
 
 	//service层初始化
 	userService := service.NewUserService(userRepo, tokenRepo, storage)
 	tokenService := service.NewTokenBlacklistService(tokenRepo)
 	todoService := service.NewTodoService(todoRepo)
+	musicService := service.NewMusicService(musicRepo, storage)
 	studyDataService := service.NewStudyDataService(studyDataRepo)
 
 	//handler层初始化
@@ -57,6 +59,7 @@ func main() {
 	avatarHandler := handler.NewAvatarHandler(userService)
 	todohandler := handler.NewTodoHandler(todoService)
 	studydatahandler := handler.NewStudyDataHandler(studyDataService)
+	musichandler := handler.NewMusicHandler(musicService)
 
 	// 启动服务器
 	// r := gin.New()
@@ -75,7 +78,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	router.RegisterRoutes(r, authhandler, avatarHandler, todohandler, studydatahandler)
+	router.RegisterRoutes(r, authhandler, avatarHandler, todohandler, studydatahandler, musichandler)
 	port := ":" + config.AppConfig.ServerPort
 	fmt.Printf("服务器正在运行，监听端口 %s\n", port)
 	if err := r.Run(port); err != nil {

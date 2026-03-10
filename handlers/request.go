@@ -47,3 +47,9 @@ type AddStudyDataRequest struct {
 	StudyTime int `json:"studytime" binding:"required"`
 	Tomatoes  int `json:"tomatoes" binding:"required"`
 }
+
+//============音乐请求结构体=============
+type UploadMusicRequest struct {
+	Author string `form:"author" binding:"required"`
+	Title  string `form:"title" binding:"required"`
+}

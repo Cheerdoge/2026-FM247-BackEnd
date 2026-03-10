@@ -58,7 +58,7 @@ type User struct {
 	Gender     string    `gorm:"type:varchar(10);default:'草履虫'" json:"gender"`
 	Experience int       `gorm:"default:0" json:"experience"` // 经验值
 	Level      int       `gorm:"default:1" json:"level"`      // 等级
-	Avatar     string    `gorm:"type:varchar(500);default:'http://localhost:8080/uploads/default-avatar.png'" json:"avatar_path"`
+	Avatar     string    `gorm:"type:varchar(500);default:'default-avatar.png'" json:"avatar_path"`
 	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
@@ -80,13 +80,12 @@ type Todo struct {
 // Music 音乐
 type Music struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
-	Author     string    `gorm:"type:varchar(255);not null" json:"author"`    // 音乐作者
-	Title      string    `gorm:"type:varchar(255);not null" json:"title"`     // 音乐标题
-	Duration   int       `gorm:"not null" json:"duration"`                    // 音乐时长，单位为秒
-	CoverURL   string    `gorm:"type:varchar(500);not null" json:"cover_url"` // 音乐封面URL
-	FileURL    string    `gorm:"type:varchar(500);not null" json:"url"`       // 音乐URL
-	UploaderID uint      `json:"uploader_id"`                                 // 上传者 ID
-	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"`            // 创建时间
+	Author     string    `gorm:"type:varchar(255);not null" json:"author"` // 音乐作者
+	Title      string    `gorm:"type:varchar(255);not null" json:"title"`  // 音乐标题
+	Duration   int       `gorm:"not null" json:"duration"`                 // 音乐时长，单位为秒
+	FileURL    string    `gorm:"type:varchar(500);not null" json:"url"`    // 音乐URL
+	UploaderID uint      `json:"uploader_id"`                              // 上传者 ID
+	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"`         // 创建时间
 }
 
 type TokenBlacklist struct {

@@ -40,3 +40,11 @@ type TotalStudyDataInfo struct {
 	StudyTime int `json:"studytime"`
 	Tomatoes  int `json:"tomatoes"`
 }
+
+// 音乐信息dto
+type MusicInfo struct {
+	Author   string `json:"author"`
+	Title    string `json:"title"`
+	Duration int    `json:"duration"`
+	FileURL  string `json:"url"`
+}

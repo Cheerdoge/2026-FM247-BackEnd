@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.17.2
+	github.com/tcolgate/mp3 v0.0.0-20170426193717-e79c5a46d300
 	golang.org/x/crypto v0.47.0
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
