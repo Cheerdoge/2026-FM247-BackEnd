@@ -28,7 +28,7 @@ func NewLocalStorage(basePath, baseURL string) *LocalStorage {
 	}
 }
 
-// 上传文件到本地存储
+// 上传文件到本地存储, 返回相对路径
 func (s *LocalStorage) Upload(ctx context.Context, path string, content io.Reader, fileSize int64, contentType string) (string, error) {
 	// 1. 拼接绝对路径 (basePath + path)，例如 "./uploads" + "music/1.mp3"
 	fullPath := filepath.Join(s.basePath, path)

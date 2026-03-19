@@ -53,3 +53,8 @@ type UploadMusicRequest struct {
 	Author string `form:"author" binding:"required"`
 	Title  string `form:"title" binding:"required"`
 }
+
+// ============环境音请求结构体=============
+type CreateAmbientSoundRequest struct {
+	Name string `form:"name" binding:"required"`
+}

@@ -48,3 +48,9 @@ type MusicInfo struct {
 	Duration int    `json:"duration"`
 	FileURL  string `json:"url"`
 }
+
+// 环境音效信息dto
+type AmbientSoundInfo struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}

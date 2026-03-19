@@ -14,6 +14,7 @@ func RegisterRoutes(
 	todohandler *handler.TodoHandler,
 	studydatahandler *handler.StudyDataHandler,
 	musichandler *handler.MusicHandler,
+	ambientSoundHandler *handler.AmbientSoundHandler,
 ) {
 	publicGroup := r.Group("/api")
 	{
@@ -54,4 +55,14 @@ func RegisterRoutes(
 		authGroup.GET("/music", musichandler.GetAllMusic)
 		authGroup.POST("/music", musichandler.UploadMusic)
 	}
+
+	// 环境音相关
+	ambientGroup := r.Group("/api/ambient-sounds")
+	ambientGroup.Use(middleware.AuthMiddleware(authhandler.Tokenservice))
+	{
+		ambientGroup.GET("", ambientSoundHandler.GetAllAmbientSounds)
+		ambientGroup.POST("", middleware.AuthMiddleware(authhandler.Tokenservice), ambientSoundHandler.CreateAmbientSound)
+		ambientGroup.DELETE("/:name", middleware.AuthMiddleware(authhandler.Tokenservice), ambientSoundHandler.DeleteAmbientSound)
+	}
+
 }

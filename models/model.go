@@ -88,6 +88,7 @@ type Music struct {
 	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"`         // 创建时间
 }
 
+// TokenBlacklist 黑名单表，用于存储被禁用的 JWT 令牌
 type TokenBlacklist struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	CreatedAt time.Time      `json:"created_at"`
@@ -95,4 +96,14 @@ type TokenBlacklist struct {
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 	Jti       string         `json:"jti" gorm:"type:varchar(255);uniqueIndex"`
 	ExpiresAt time.Time      `json:"expires_at"`
+}
+
+// AmbientSound 环境音效表
+type AmbientSound struct {
+	ID        uint           `json:"id" gorm:"primaryKey"`
+	Name      string         `json:"name" gorm:"type:varchar(255);not null"`
+	URL       string         `json:"url" gorm:"type:varchar(500);not null"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 }
