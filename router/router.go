@@ -65,4 +65,11 @@ func RegisterRoutes(
 		ambientGroup.DELETE("/:name", middleware.AuthMiddleware(authhandler.Tokenservice), ambientSoundHandler.DeleteAmbientSound)
 	}
 
+	// 管理员特有路由
+	adminGroup := r.Group("/api/admin")
+	adminGroup.Use(middleware.AuthMiddleware(authhandler.Tokenservice), middleware.AdminMiddleware())
+	{
+		adminGroup.POST("/music", musichandler.UploadSystemMusic)
+	}
+
 }

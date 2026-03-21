@@ -41,6 +41,7 @@ func AuthMiddleware(tokenblacklistservice handler.TokenService) gin.HandlerFunc 
 
 		c.Set("claims", claims)
 		c.Set("user_id", claims.UserID)
+		c.Set("is_admin", claims.IsAdmin)
 		c.Set("jti", claims.Jti)
 		c.Next()
 	}

@@ -16,7 +16,7 @@ import (
 )
 
 type MusicRepository interface {
-	GetAll() ([]models.Music, error)
+	GetAll(userid uint) ([]models.Music, error)
 	CreateMusic(author, title string, duration int, url string, uploaderID uint) error
 }
 
@@ -33,9 +33,9 @@ func NewMusicService(musicRepo MusicRepository, storage storage.Storage) *MusicS
 }
 
 // GetAllMusic 获取所有音乐
-func (s *MusicService) GetAllMusic() ([]MusicInfo, error) {
+func (s *MusicService) GetAllMusic(userid uint) ([]MusicInfo, error) {
 
-	musics, err := s.musicRepo.GetAll()
+	musics, err := s.musicRepo.GetAll(userid)
 	if err != nil {
 		return nil, err
 	}
@@ -118,9 +118,9 @@ func (s *MusicService) UploadMusic(ctx context.Context, userID uint, file multip
 		return "", fmt.Errorf("重置文件指针失败: %w", err)
 	}
 
-	// 生成文件路径，格式为 audios/{userID}_{timestamp}{ext}
+	// 生成文件路径，格式为 audios/{userID}/{timestamp}{ext}
 	ext := filepath.Ext(fileHeader.Filename)
-	path := fmt.Sprintf("audios/%d_%d%s", userID, time.Now().Unix(), ext)
+	path := fmt.Sprintf("audios/%d/%d%s", userID, time.Now().Unix(), ext)
 
 	// 保存文件
 	url, err := s.storage.Upload(ctx, path, file, fileHeader.Size, contentType)

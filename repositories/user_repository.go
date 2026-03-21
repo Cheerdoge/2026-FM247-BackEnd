@@ -93,9 +93,32 @@ func (r *UserRepository) UpdatePassword(userid uint, newpassword string) error {
 }
 
 func (r *UserRepository) DeleteUser(userid uint) error {
-	result := r.db.Delete(&models.User{}, userid)
-	if result.Error != nil {
-		return result.Error
+	error := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("user_id = ?", userid).Delete(&models.DailyStudyData{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", userid).Delete(&models.MonthlyStudyData{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", userid).Delete(&models.TotalStudyData{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", userid).Delete(&models.Todo{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", userid).Delete(&models.Note{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("uploader_id = ?", userid).Delete(&models.Music{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("id = ?", userid).Delete(&models.User{}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if error != nil {
+		return error
 	}
 	return nil
 }

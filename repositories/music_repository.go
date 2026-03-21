@@ -14,9 +14,9 @@ func NewMusicRepository(db *gorm.DB) *MusicRepository {
 	return &MusicRepository{db: db}
 }
 
-func (r *MusicRepository) GetAll() ([]models.Music, error) {
+func (r *MusicRepository) GetAll(userid uint) ([]models.Music, error) {
 	var musics []models.Music
-	result := r.db.Order("created_at desc").Find(&musics)
+	result := r.db.Order("created_at desc").Where("uploader_id = ? OR uploader_id = ?", userid, 0).Find(&musics)
 	return musics, result.Error
 }
 

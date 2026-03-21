@@ -18,8 +18,9 @@ import (
 // UserID: 用户ID，用于标识用户身份
 // Username: 用户名，用于标识用户身份
 type Claims struct {
-	UserID uint   `json:"user_id"`
-	Jti    string `json:"jti"`
+	UserID  uint   `json:"user_id"`
+	IsAdmin bool   `json:"is_admin"`
+	Jti     string `json:"jti"`
 	jwt.StandardClaims
 }
 
@@ -37,8 +38,9 @@ func GenerateToken(user *models.User) (string, error) {
 
 	// 创建Claims声明对象，包含自定义声明和标准声明
 	claims := &Claims{
-		UserID: user.ID,          // 设置用户ID
-		Jti:    uuid.NewString(), // 设置唯一的JWT ID
+		UserID:  user.ID,          // 设置用户ID
+		IsAdmin: user.IsAdmin,     // 设置是否为管理员
+		Jti:     uuid.NewString(), // 设置唯一的JWT ID
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(), // 设置过期时间（Unix时间戳）
 			IssuedAt:  time.Now().Unix(),     // 设置签发时间（Unix时间戳）
