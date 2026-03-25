@@ -1,18 +1,19 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gin-gonic/gin"
 	"github.com/sashabaranov/go-openai"
 )
 
 const MaxChatHistoryMessages = 20
 
 type AIChatRepository interface {
-	SaveChatHistory(ctx *gin.Context, sessionID uint, newMessages ...openai.ChatCompletionMessage) error
-	GetChatHistory(ctx *gin.Context, sessionID uint) ([]openai.ChatCompletionMessage, error)
-	TrimChatHistory(ctx *gin.Context, sessionID uint) error
+	SaveChatHistory(ctx context.Context, sessionID uint, newMessages ...openai.ChatCompletionMessage) error
+	GetChatHistory(ctx context.Context, sessionID uint) ([]openai.ChatCompletionMessage, error)
+	TrimChatHistory(ctx context.Context, sessionID uint) error
+	PopLatestMessage(ctx context.Context, sessionID uint) error
 }
 
 type AIChatService struct {
@@ -24,7 +25,7 @@ func NewAIChatService(repo AIChatRepository, ai *openai.Client) *AIChatService {
 	return &AIChatService{repo: repo, ai: ai}
 }
 
-func (s *AIChatService) Chat(ctx *gin.Context, userID uint, content string) (string, error) {
+func (s *AIChatService) Chat(ctx context.Context, userID uint, content string) (string, error) {
 	userMsg := openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
 		Content: content,
@@ -38,7 +39,7 @@ func (s *AIChatService) Chat(ctx *gin.Context, userID uint, content string) (str
 	aiRequestSuccess := false
 	defer func() {
 		if !aiRequestSuccess {
-			s.repo.TrimChatHistory(ctx, userID)
+			s.repo.PopLatestMessage(ctx, userID)
 		}
 	}()
 
@@ -67,7 +68,9 @@ func (s *AIChatService) Chat(ctx *gin.Context, userID uint, content string) (str
 	if err != nil {
 		return "", fmt.Errorf("调用AI接口失败: %w", err)
 	}
-
+	if len(resp.Choices) == 0 {
+		return "", fmt.Errorf("AI接口返回空结果: request_id=%s, model=%s", resp.ID, resp.Model)
+	}
 	aiMsg := resp.Choices[0].Message
 	err = s.repo.SaveChatHistory(ctx, userID, aiMsg)
 	if err != nil {
@@ -77,7 +80,7 @@ func (s *AIChatService) Chat(ctx *gin.Context, userID uint, content string) (str
 	return aiMsg.Content, nil
 }
 
-func (s *AIChatService) GetChatHistory(ctx *gin.Context, userID uint) ([]openai.ChatCompletionMessage, error) {
+func (s *AIChatService) GetChatHistory(ctx context.Context, userID uint) ([]openai.ChatCompletionMessage, error) {
 	chatHistory, err := s.repo.GetChatHistory(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("获取聊天记录失败: %w", err)

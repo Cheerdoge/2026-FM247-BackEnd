@@ -1,11 +1,11 @@
 package repository
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/sashabaranov/go-openai"
 )
@@ -23,7 +23,7 @@ func (r *AIChatRepository) getRedisKey(sessionID uint) string {
 	return "chat_history:" + s
 }
 
-func (r *AIChatRepository) SaveChatHistory(ctx *gin.Context, sessionID uint, newMessages ...openai.ChatCompletionMessage) error {
+func (r *AIChatRepository) SaveChatHistory(ctx context.Context, sessionID uint, newMessages ...openai.ChatCompletionMessage) error {
 	var chatHistory []interface{}
 	for _, msg := range newMessages {
 		msgJSON, err := json.Marshal(msg)
@@ -41,7 +41,7 @@ func (r *AIChatRepository) SaveChatHistory(ctx *gin.Context, sessionID uint, new
 	return nil
 }
 
-func (r *AIChatRepository) GetChatHistory(ctx *gin.Context, sessionID uint) ([]openai.ChatCompletionMessage, error) {
+func (r *AIChatRepository) GetChatHistory(ctx context.Context, sessionID uint) ([]openai.ChatCompletionMessage, error) {
 	rediskey := r.getRedisKey(sessionID)
 	values, err := r.redis.LRange(ctx, rediskey, 0, -1).Result()
 	if err != nil {
@@ -57,17 +57,18 @@ func (r *AIChatRepository) GetChatHistory(ctx *gin.Context, sessionID uint) ([]o
 		}
 		chatHistory = append(chatHistory, message)
 	}
+	r.redis.Expire(ctx, rediskey, 7*24*time.Hour)
 	return chatHistory, nil
 }
 
 // 保持聊天记录不超过50条
-func (r *AIChatRepository) TrimChatHistory(ctx *gin.Context, sessionID uint) error {
+func (r *AIChatRepository) TrimChatHistory(ctx context.Context, sessionID uint) error {
 	rediskey := r.getRedisKey(sessionID)
 	return r.redis.LTrim(ctx, rediskey, -50, -1).Err()
 }
 
 // 当ai未回复时删除最新消息，防止污染上下文
-func (r *AIChatRepository) PopLatestMessage(ctx *gin.Context, sessionID uint) error {
+func (r *AIChatRepository) PopLatestMessage(ctx context.Context, sessionID uint) error {
 	rediskey := r.getRedisKey(sessionID)
 	return r.redis.RPop(ctx, rediskey).Err()
 }

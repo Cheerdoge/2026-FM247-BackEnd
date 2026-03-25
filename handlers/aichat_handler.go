@@ -2,6 +2,7 @@ package handler
 
 import (
 	"2026-FM247-BackEnd/utils"
+	"context"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -9,8 +10,8 @@ import (
 )
 
 type AIChatService interface {
-	Chat(ctx *gin.Context, userID uint, content string) (string, error)
-	GetChatHistory(ctx *gin.Context, userID uint) ([]openai.ChatCompletionMessage, error)
+	Chat(ctx context.Context, userID uint, content string) (string, error)
+	GetChatHistory(ctx context.Context, userID uint) ([]openai.ChatCompletionMessage, error)
 }
 
 type AIChatHandler struct {
@@ -33,7 +34,7 @@ func (h *AIChatHandler) Chat(c *gin.Context) {
 		FailWithMessage(c, "请先登录")
 		return
 	}
-	response, err := h.service.Chat(c, claims.UserID, req.Content)
+	response, err := h.service.Chat(c.Request.Context(), claims.UserID, req.Content)
 	if err != nil {
 		FailWithMessage(c, "聊天请求失败")
 		fmt.Printf("Chat error: %v\n", err)
@@ -48,7 +49,7 @@ func (h *AIChatHandler) GetChatHistory(c *gin.Context) {
 		FailWithMessage(c, "请先登录")
 		return
 	}
-	history, err := h.service.GetChatHistory(c, claims.UserID)
+	history, err := h.service.GetChatHistory(c.Request.Context(), claims.UserID)
 	if err != nil {
 		FailWithMessage(c, "获取聊天记录失败")
 		return
