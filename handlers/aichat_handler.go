@@ -2,6 +2,7 @@ package handler
 
 import (
 	"2026-FM247-BackEnd/utils"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sashabaranov/go-openai"
@@ -35,6 +36,7 @@ func (h *AIChatHandler) Chat(c *gin.Context) {
 	response, err := h.service.Chat(c, claims.UserID, req.Content)
 	if err != nil {
 		FailWithMessage(c, "聊天请求失败")
+		fmt.Printf("Chat error: %v\n", err)
 		return
 	}
 	OkWithData(c, response)

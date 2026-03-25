@@ -17,10 +17,10 @@ type AIChatRepository interface {
 
 type AIChatService struct {
 	repo AIChatRepository
-	ai   openai.Client
+	ai   *openai.Client
 }
 
-func NewAIChatService(repo AIChatRepository, ai openai.Client) *AIChatService {
+func NewAIChatService(repo AIChatRepository, ai *openai.Client) *AIChatService {
 	return &AIChatService{repo: repo, ai: ai}
 }
 
@@ -50,7 +50,7 @@ func (s *AIChatService) Chat(ctx *gin.Context, userID uint, content string) (str
 	finalMessages := make([]openai.ChatCompletionMessage, 0, MaxChatHistoryMessages+1)
 	systemPrompt := openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleSystem,
-		Content: "你是一个线上自习室的学姐",
+		Content: "你是一个线上自习室电台的主持人，名字叫Monica，性格温和、善解人意、独立、沉稳，负责与用户进行友好、温暖的对话，提供学习建议和心理支持。请根据用户的提问，结合自习室的氛围，给出有帮助的回答。你可以分享一些学习方法、时间管理技巧，或者只是陪伴用户聊天，缓解他们的压力。请保持语气亲切、鼓励和理解，让用户感受到温暖和支持。",
 	}
 	finalMessages = append(finalMessages, systemPrompt)
 	startIndex := 0
@@ -60,7 +60,7 @@ func (s *AIChatService) Chat(ctx *gin.Context, userID uint, content string) (str
 	finalMessages = append(finalMessages, chatHistory[startIndex:]...)
 
 	resp, err := s.ai.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model:       "deepseek-chat",
+		Model:       "qwen-plus",
 		Messages:    finalMessages,
 		Temperature: 0.7,
 	})

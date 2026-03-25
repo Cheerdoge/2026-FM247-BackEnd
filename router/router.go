@@ -70,8 +70,8 @@ func RegisterRoutes(
 	aiChatGroup := r.Group("/api/ai-chat")
 	aiChatGroup.Use(middleware.AuthMiddleware(authhandler.Tokenservice))
 	{
-		aiChatGroup.POST("/message", aiChatHandler.Chat)
-		aiChatGroup.GET("/history", aiChatHandler.GetChatHistory)
+		aiChatGroup.POST("", aiChatHandler.Chat)
+		aiChatGroup.GET("", aiChatHandler.GetChatHistory)
 	}
 
 	// 管理员特有路由

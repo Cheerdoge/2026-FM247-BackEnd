@@ -40,6 +40,13 @@ func main() {
 
 	fmt.Println("数据库连接成功")
 
+	// aiclient初始化
+	aiClient, err := config.NewAIClient()
+	if err != nil {
+		fmt.Printf("无法创建AI客户端: %v\n", err)
+		return
+	}
+
 	//dao层初始化
 	userRepo := repository.NewUserRepository(db)
 	tokenRepo := repository.NewTokenBlacklistRepository(db)
@@ -47,6 +54,7 @@ func main() {
 	studyDataRepo := repository.NewStudyDataRepository(db, redisClient)
 	musicRepo := repository.NewMusicRepository(db)
 	ambientSoundRepo := repository.NewAmbientSoundRepository(db)
+	aichatRepo := repository.NewAIChatRepository(redisClient)
 
 	//service层初始化
 	userService := service.NewUserService(userRepo, tokenRepo, storage)
@@ -55,7 +63,7 @@ func main() {
 	musicService := service.NewMusicService(musicRepo, storage)
 	studyDataService := service.NewStudyDataService(studyDataRepo)
 	ambientSoundService := service.NewAmbientSoundService(ambientSoundRepo, storage)
-
+	aichatService := service.NewAIChatService(aichatRepo, aiClient)
 	//handler层初始化
 	authhandler := handler.NewAuthHandler(tokenService, userService, studyDataService)
 	avatarHandler := handler.NewAvatarHandler(userService)
@@ -63,6 +71,7 @@ func main() {
 	studydatahandler := handler.NewStudyDataHandler(studyDataService)
 	musichandler := handler.NewMusicHandler(musicService)
 	ambientSoundHandler := handler.NewAmbientSoundHandler(ambientSoundService)
+	aiChatHandler := handler.NewAIChatHandler(aichatService)
 
 	// 启动服务器
 	// r := gin.New()
@@ -81,7 +90,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	router.RegisterRoutes(r, authhandler, avatarHandler, todohandler, studydatahandler, musichandler, ambientSoundHandler)
+	router.RegisterRoutes(r, authhandler, avatarHandler, todohandler, studydatahandler, musichandler, ambientSoundHandler, aiChatHandler)
 	port := ":" + config.AppConfig.ServerPort
 	fmt.Printf("服务器正在运行，监听端口 %s\n", port)
 	if err := r.Run(port); err != nil {

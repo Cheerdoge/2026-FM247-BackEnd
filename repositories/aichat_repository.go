@@ -25,13 +25,15 @@ func (r *AIChatRepository) getRedisKey(sessionID uint) string {
 
 func (r *AIChatRepository) SaveChatHistory(ctx *gin.Context, sessionID uint, newMessages ...openai.ChatCompletionMessage) error {
 	var chatHistory []interface{}
-	msgJSON, err := json.Marshal(newMessages)
-	if err != nil {
-		return err
+	for _, msg := range newMessages {
+		msgJSON, err := json.Marshal(msg)
+		if err != nil {
+			return err
+		}
+		chatHistory = append(chatHistory, string(msgJSON))
 	}
-	chatHistory = append(chatHistory, string(msgJSON))
 	rediskey := r.getRedisKey(sessionID)
-	err = r.redis.RPush(ctx, rediskey, chatHistory...).Err()
+	err := r.redis.RPush(ctx, rediskey, chatHistory...).Err()
 	if err != nil {
 		return err
 	}
