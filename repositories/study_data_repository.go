@@ -57,9 +57,9 @@ func (r *StudyDataRepository) IncrementDailyStudyTime(userID uint, date time.Tim
 	pipe.HIncrBy(r.ctx, dailykey, "study_time", int64(studyTime))
 	pipe.HIncrBy(r.ctx, monthlykey, "study_time", int64(studyTime))
 
-	//设置并只设置一次过期时间(NX)
-	pipe.ExpireNX(r.ctx, dailykey, 26*time.Hour)
-	pipe.ExpireNX(r.ctx, monthlykey, 35*24*time.Hour)
+	//设置过期时间
+	pipe.Expire(r.ctx, dailykey, 26*time.Hour)
+	pipe.Expire(r.ctx, monthlykey, 35*24*time.Hour)
 
 	_, err := pipe.Exec(r.ctx)
 	return err
@@ -82,9 +82,8 @@ func (r *StudyDataRepository) IncrementDailyTomatoes(userID uint, date time.Time
 	pipe.HIncrBy(r.ctx, dailykey, "tomatoes", int64(tomatoes))
 	pipe.HIncrBy(r.ctx, monthlykey, "tomatoes", int64(tomatoes))
 
-	//其实可以不写来着，以防万一
-	pipe.ExpireNX(r.ctx, dailykey, 26*time.Hour)
-	pipe.ExpireNX(r.ctx, monthlykey, 35*24*time.Hour)
+	pipe.Expire(r.ctx, dailykey, 26*time.Hour)
+	pipe.Expire(r.ctx, monthlykey, 32*24*time.Hour)
 
 	_, err := pipe.Exec(r.ctx)
 	if err != nil {
@@ -180,10 +179,6 @@ func (r *StudyDataRepository) SyncDailyDataToMySQL(userID uint, date time.Time, 
 	return nil
 }
 
-//以下是查询数据以及总结报告的数据汇总
-
-//待办：优化过期逻辑，若数据在redis中存在，则延长过期时间
-
 // 查询每日学习数据
 // 考虑先从redis中查，没有再从mysql中查，同时将该数据同步至redis，设置过期时间25小时
 func (r *StudyDataRepository) GetDailyStudyData(userID uint, date time.Time) (*models.DailyStudyData, error, bool) {
@@ -215,6 +210,8 @@ func (r *StudyDataRepository) GetDailyStudyData(userID uint, date time.Time) (*m
 		}
 		return &dailyData, nil, false
 	}
+
+	r.redis.Expire(r.ctx, dailykey, 26*time.Hour)
 
 	studyTime, _ := strconv.Atoi(data["study_time"])
 	tomatoes, _ := strconv.Atoi(data["tomatoes"])
@@ -257,6 +254,9 @@ func (r *StudyDataRepository) GetMonthlyStudyData(userID uint, date time.Time) (
 		}
 		return &monthlyData, nil, false
 	}
+
+	r.redis.Expire(r.ctx, monthlykey, 26*time.Hour)
+
 	studyTime, _ := strconv.Atoi(data["study_time"])
 	tomatoes, _ := strconv.Atoi(data["tomatoes"])
 	monthlyData := &models.MonthlyStudyData{
@@ -290,13 +290,14 @@ func (r *StudyDataRepository) GetTotalStudyData(userID uint) (*models.TotalStudy
 		pipe := r.redis.Pipeline()
 		pipe.HSet(r.ctx, totalkey, "study_time", totalData.StudyTime)
 		pipe.HSet(r.ctx, totalkey, "tomatoes", totalData.Tomatoes)
-		pipe.ExpireNX(r.ctx, totalkey, 24*time.Hour)
+		pipe.Expire(r.ctx, totalkey, 26*time.Hour)
 		_, err = pipe.Exec(r.ctx)
 		if err != nil {
 			return nil, err, false
 		}
 		return &totalData, nil, false
 	}
+	r.redis.Expire(r.ctx, totalkey, 26*time.Hour)
 	studyTime, _ := strconv.Atoi(data["study_time"])
 	tomatoes, _ := strconv.Atoi(data["tomatoes"])
 	totalData := &models.TotalStudyData{
