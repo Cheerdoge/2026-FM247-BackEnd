@@ -16,6 +16,8 @@ func RegisterRoutes(
 	musichandler *handler.MusicHandler,
 	ambientSoundHandler *handler.AmbientSoundHandler,
 	aiChatHandler *handler.AIChatHandler,
+	clandarHandler *handler.CalendarEventHandler,
+	gifHandler *handler.GifsHandler,
 ) {
 	publicGroup := r.Group("/api")
 	{
@@ -74,11 +76,30 @@ func RegisterRoutes(
 		aiChatGroup.GET("", aiChatHandler.GetChatHistory)
 	}
 
+	// 日历相关
+	calendarGroup := r.Group("/api/calendar")
+	calendarGroup.Use(middleware.AuthMiddleware(authhandler.Tokenservice))
+	{
+		calendarGroup.POST("/event", clandarHandler.CreateCalendarEvent)
+		calendarGroup.PUT("/event/:id", clandarHandler.UpdateCalendarEvent)
+		calendarGroup.DELETE("/event/:id", clandarHandler.DeleteCalendarEvent)
+		calendarGroup.GET("/event/month/:year/:month", clandarHandler.GetMonthEventsByUserID)
+		calendarGroup.GET("/event/:date", clandarHandler.GetCalendarEventByDate)
+	}
+
+	// Gif相关
+	gifGroup := r.Group("/api/gifs")
+	gifGroup.Use(middleware.AuthMiddleware(authhandler.Tokenservice))
+	{
+		gifGroup.GET("", gifHandler.GetGifs)
+		gifGroup.GET(":id", gifHandler.GetGifURLByID)
+	}
 	// 管理员特有路由
 	adminGroup := r.Group("/api/admin")
 	adminGroup.Use(middleware.AuthMiddleware(authhandler.Tokenservice), middleware.AdminMiddleware())
 	{
 		adminGroup.POST("/music", musichandler.UploadSystemMusic)
+		adminGroup.POST("/gifs", gifHandler.CreateGif)
 	}
 
 }

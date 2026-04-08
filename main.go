@@ -56,6 +56,8 @@ func main() {
 	ambientSoundRepo := repository.NewAmbientSoundRepository(db)
 	aichatRepo := repository.NewAIChatRepository(redisClient)
 	expRepo := repository.NewExpRepository(db, redisClient)
+	calendarRepo := repository.NewCalendarEventRepository(db)
+	gifsRepo := repository.NewGifsRepository(db)
 
 	//service层初始化
 	userService := service.NewUserService(userRepo, tokenRepo, storage)
@@ -65,6 +67,8 @@ func main() {
 	studyDataService := service.NewStudyDataService(studyDataRepo, expRepo)
 	ambientSoundService := service.NewAmbientSoundService(ambientSoundRepo, storage)
 	aichatService := service.NewAIChatService(aichatRepo, aiClient)
+	calendarEventService := service.NewCalendarEventService(calendarRepo)
+	gifsService := service.NewGifsService(storage, gifsRepo)
 	//handler层初始化
 	authhandler := handler.NewAuthHandler(tokenService, userService, studyDataService)
 	avatarHandler := handler.NewAvatarHandler(userService)
@@ -73,6 +77,8 @@ func main() {
 	musichandler := handler.NewMusicHandler(musicService)
 	ambientSoundHandler := handler.NewAmbientSoundHandler(ambientSoundService)
 	aiChatHandler := handler.NewAIChatHandler(aichatService)
+	clandarHandler := handler.NewCalendarEventHandler(calendarEventService)
+	gifHandler := handler.NewGifsHandler(gifsService)
 
 	// 启动服务器
 	// r := gin.New()
@@ -91,7 +97,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	router.RegisterRoutes(r, authhandler, avatarHandler, todohandler, studydatahandler, musichandler, ambientSoundHandler, aiChatHandler)
+	router.RegisterRoutes(r, authhandler, avatarHandler, todohandler, studydatahandler, musichandler, ambientSoundHandler, aiChatHandler, clandarHandler, gifHandler)
 	port := ":" + config.AppConfig.ServerPort
 	fmt.Printf("服务器正在运行，监听端口 %s\n", port)
 	if err := r.Run(port); err != nil {
