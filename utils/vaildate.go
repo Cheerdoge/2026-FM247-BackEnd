@@ -28,3 +28,10 @@ func ValidatePhoneNumber(phone string) bool {
 	}
 	return phone[0] == '1'
 }
+
+func IntToString(num int) string {
+	if num < 10 {
+		return string(rune(num + '0'))
+	}
+	return string(rune(num/10+'0')) + string(rune(num%10+'0'))
+}

@@ -9,7 +9,7 @@ import (
 )
 
 type StudyDataService interface {
-	AddStudyData(userID uint, date time.Time, studyTime int, tomatoes int) (bool, string)
+	AddStudyData(userID uint, date time.Time, studyTime int, tomatoes int) (bool, int, int, error)
 	GetDailyStudyData(userID uint, date time.Time) (service.DailyStudyDataInfo, string)
 	GetMonthlyStudyData(userID uint, date time.Time) (service.MonthlyStudyDataInfo, string)
 	GetTotalStudyData(userID uint) (service.TotalStudyDataInfo, string)
@@ -44,13 +44,20 @@ func (h *StudyDataHandler) AddStudyData(c *gin.Context) {
 	// 3. 增加学习数据
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	t := time.Now().In(loc)
-	success, msg := h.service.AddStudyData(claims.UserID, t, req.StudyTime, req.Tomatoes)
-	if !success {
-		FailWithMessage(c, "增加学习数据失败: "+msg)
+	isLevelUp, nowLevel, expToNextLevel, err := h.service.AddStudyData(claims.UserID, t, req.StudyTime, req.Tomatoes)
+	if err != nil {
+		FailWithMessage(c, err.Error())
+		return
+	}
+	if isLevelUp {
+		Ok(c,
+			"学习数据记录成功，恭喜你升级到"+utils.IntToString(nowLevel)+"！距离下一级还差"+utils.IntToString(expToNextLevel),
+			gin.H{"level_up": true, "new_level": nowLevel, "exp_to_next_level": expToNextLevel},
+		)
 		return
 	}
 	// 4. 返回结果
-	OkWithMessage(c, msg)
+	Ok(c, "学习数据记录成功", gin.H{"level_up": false, "current_level": nowLevel, "exp_to_next_level": expToNextLevel})
 }
 
 // GetDailyStudyData 获取今日学习数据

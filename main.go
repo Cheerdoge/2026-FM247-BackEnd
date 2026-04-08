@@ -55,13 +55,14 @@ func main() {
 	musicRepo := repository.NewMusicRepository(db)
 	ambientSoundRepo := repository.NewAmbientSoundRepository(db)
 	aichatRepo := repository.NewAIChatRepository(redisClient)
+	expRepo := repository.NewExpRepository(db, redisClient)
 
 	//service层初始化
 	userService := service.NewUserService(userRepo, tokenRepo, storage)
 	tokenService := service.NewTokenBlacklistService(tokenRepo)
 	todoService := service.NewTodoService(todoRepo)
 	musicService := service.NewMusicService(musicRepo, storage)
-	studyDataService := service.NewStudyDataService(studyDataRepo)
+	studyDataService := service.NewStudyDataService(studyDataRepo, expRepo)
 	ambientSoundService := service.NewAmbientSoundService(ambientSoundRepo, storage)
 	aichatService := service.NewAIChatService(aichatRepo, aiClient)
 	//handler层初始化

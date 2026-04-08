@@ -2,6 +2,8 @@ package service
 
 import (
 	"2026-FM247-BackEnd/models"
+	"context"
+	"fmt"
 	"time"
 )
 
@@ -17,32 +19,50 @@ type StudyDataRepository interface {
 	GetStudyDataSummary(userID uint, startDate, endDate time.Time) ([]models.DailyStudyData, error)
 }
 
+type ExpRepository interface {
+	UpdateExperience(userID uint, exp int, level int) error
+	GetExperienceAndLevelFromDB(userID uint) (int, int, error)
+	GetExpAndLevelFromRedis(ctx context.Context, userID uint) (int, int, error)
+	IncreaseExpAndCheckLevelUp(ctx context.Context, userID uint, exp int) (bool, int, int, error)
+	SyncExpAndLevelToDB(ctx context.Context, userID uint) error
+}
+
 type StudyDataService struct {
-	repo StudyDataRepository
+	repo    StudyDataRepository
+	exprepo ExpRepository
 }
 
-func NewStudyDataService(repo StudyDataRepository) *StudyDataService {
-	return &StudyDataService{repo: repo}
+func NewStudyDataService(repo StudyDataRepository, exprepo ExpRepository) *StudyDataService {
+	return &StudyDataService{repo: repo, exprepo: exprepo}
 }
 
-// 增加学习时长、番茄钟次数
-func (s *StudyDataService) AddStudyData(userID uint, date time.Time, studyTime int, tomatoes int) (bool, string) {
+// 增加学习时长、番茄钟次数同时增加经验值
+func (s *StudyDataService) AddStudyData(userID uint, date time.Time, studyTime int, tomatoes int) (bool, int, int, error) {
 	err := s.repo.IncrementDailyStudyTime(userID, date, studyTime)
 	if err != nil {
-		return false, "记录学习时长失败" + err.Error()
+		return false, 0, 0, fmt.Errorf("记录学习时长失败: %w", err)
 	}
 
 	err = s.repo.IncrementDailyTomatoes(userID, date, tomatoes)
 	if err != nil {
-		return false, "记录番茄钟次数失败" + err.Error()
+		return false, 0, 0, fmt.Errorf("记录番茄钟次数失败: %w", err)
+	}
+
+	isLevelUp, nowLevel, expToNextLevel, err := s.exprepo.IncreaseExpAndCheckLevelUp(context.Background(), userID, studyTime)
+	if err != nil {
+		return false, 0, 0, fmt.Errorf("增加经验值失败: %w", err)
 	}
 
 	err = s.repo.SyncDailyDataToMySQL(userID, date, studyTime, tomatoes)
 	if err != nil {
-		return false, "同步数据到MySQL失败" + err.Error()
+		return false, 0, 0, fmt.Errorf("同步数据到MySQL失败: %w", err)
+	}
+	err = s.exprepo.SyncExpAndLevelToDB(context.Background(), userID)
+	if err != nil {
+		return false, 0, 0, fmt.Errorf("同步经验值到MySQL失败: %w", err)
 	}
 
-	return true, "学习数据记录成功"
+	return isLevelUp, nowLevel, expToNextLevel, nil
 }
 
 // 获取每日学习数据
