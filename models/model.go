@@ -108,3 +108,25 @@ type AmbientSound struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 }
+
+// CalendarEvent 日历事件表
+type CalendarEvent struct {
+	ID        uint           `json:"id" gorm:"primaryKey"`
+	UserID    uint           `json:"user_id" gorm:"index:idx_user_date"`
+	Title     string         `json:"title" gorm:"type:varchar(255);not null"`
+	Gificon   string         `json:"gificon" gorm:"type:varchar(255)"`
+	Date      time.Time      `json:"date" gorm:"type:date;index:idx_user_date"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
+}
+
+// Gif Gif表，用于存储GIF图标
+type Gif struct {
+	ID        uint           `json:"id" gorm:"primaryKey"`
+	Name      string         `json:"name" gorm:"type:varchar(255);not null;uniqueIndex"`
+	URL       string         `json:"url" gorm:"type:varchar(500);not null"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
+}

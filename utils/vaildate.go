@@ -1,6 +1,9 @@
 package utils
 
-import "unicode"
+import (
+	"strconv"
+	"unicode"
+)
 
 func ValidateUsername(username string) bool {
 	// 用户名长度2-20位，只能包含汉字、字母、数字、下划线
@@ -34,4 +37,14 @@ func IntToString(num int) string {
 		return string(rune(num + '0'))
 	}
 	return string(rune(num/10+'0')) + string(rune(num%10+'0'))
+}
+
+func StringToUint(s string) (uint, error) {
+	u64, err := strconv.ParseUint(s, 10, 64)
+	return uint(u64), err
+}
+
+func StringToInt(s string) (int, error) {
+	i64, err := strconv.ParseInt(s, 10, 64)
+	return int(i64), err
 }

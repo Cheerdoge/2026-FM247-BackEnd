@@ -42,6 +42,8 @@ func ConnectDatabase() (*gorm.DB, error) {
 		&models.TokenBlacklist{},
 		&models.Music{},
 		&models.AmbientSound{},
+		&models.CalendarEvent{},
+		&models.Gif{},
 	)
 	log.Println("Database migrated successfully")
 	return db, nil

@@ -54,3 +54,18 @@ type AmbientSoundInfo struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 }
+
+// 日历事件dto
+type CalendarEventInfo struct {
+	ID      uint      `json:"id"`
+	Title   string    `json:"title"`
+	Date    time.Time `json:"date"`
+	Gificon string    `json:"gificon"`
+}
+
+// Gif信息dto
+type GifInfo struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}

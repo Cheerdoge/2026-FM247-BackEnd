@@ -63,3 +63,21 @@ type CreateAmbientSoundRequest struct {
 type AIChatRequest struct {
 	Content string `json:"content" binding:"required"`
 }
+
+// ============日历事件请求结构体=============
+type CreateCalendarEventRequest struct {
+	Title   string `json:"title" binding:"required"`
+	Date    string `json:"date" binding:"required,datetime=2006-01-02"`
+	Gificon string `json:"gificon"`
+}
+
+type UpdateCalendarEventRequest struct {
+	Title   string `json:"title"`
+	Date    string `json:"date" binding:"required,datetime=2006-01-02"`
+	Gificon string `json:"gificon"`
+}
+
+// ============GIF请求结构体=============
+type CreateGifRequest struct {
+	Name string `form:"name" binding:"required"`
+}
